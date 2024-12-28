@@ -1,22 +1,24 @@
-#include <signal.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <errno.h>
+#include <signal.h> // Для работы с сигналами
+#include <sys/select.h> // pselect
+#include <sys/types.h>  // Библиотека для типов данных
+#include <sys/socket.h> // Для операций с сокетами
+#include <netinet/in.h> // Библиотека для работы с интернет-адресами
+#include <unistd.h> // POSIX API для системных вызовов
+#include <errno.h> // Библиотека для обработки ошибок
 #include <stdio.h>
 #include <stdlib.h>
 
-volatile sig_atomic_t wasSigHup = 0;         //
-void sigHupHandler(int r) {	wasSigHup = 1; } // Объявление обработчика сигнала SigHup
+volatile sig_atomic_t wasSigHup = 0;         // sig_atomic_t - гарантирует, что компилятор операцию с этим типом данных всегда будет представлять в виде одной инструкции
+void sigHupHandler(int r) { wasSigHup = 1; } // Объявление безопасного обработчика сигнала обработчика сигнала SigHup
 
 int main() {
+	// Регистрация обработчика сигнала
 	struct sigaction sa;              //
-	sigaction(SIGHUP, NULL, &sa);     //
-	sa.sa_handler = sigHupHandler;    // Регистрация обработчика сигнала
-	sa.sa_flags |= SA_RESTART;        //
-	sigaction(SIGHUP, &sa, NULL);     //
+	sigaction(SIGHUP, NULL, &sa);     // В эту переменную сбрасываем атрибуты этого сигнала для вашего процессора из ядра операционной системы
+	sa.sa_handler = sigHupHandler;    // Хранитт указатель на вашу функцию, в которой скрывается обработчик сигнала
+	sa.sa_flags |= SA_RESTART;        // Устанавливаем ылаг
+	sigaction(SIGHUP, &sa, NULL);     // Повторный вызов функции sigaction уже с просьбой вашу модифицированную структуру сохранить в ядре
+	// Выгружаем из ядра то, что было на текущий момент, модифицируем, затем возвращаем в ядро уже в модифицированном виде
 
 	sigset_t blockedMask, origMask;                    //
 	sigemptyset(&blockedMask);                         // Блокировка сигнала
