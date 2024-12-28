@@ -42,7 +42,7 @@ int main() {
 	int clientSocket; // Объявление клиентского сокета (его дескриптора)
 	int maxFd = serverSocket; // Переменная наибольшего дескриптора сокета, для мониторинга входящих подключений
 	fd_set fds; // Заводим множество файловых дескрипторов
-	bool client_is_connected = false;
+	bool isConnected = false; 
 
 	while (true)
 	{
@@ -62,9 +62,9 @@ int main() {
 				if (wasSigHup) // Проверяем был ли это сигнал SigHub
 				{
 					wasSigHup = 0; // Условно обрабатываем сигнал SigHup
-					printf("SIGHUP is received\n"); // Оповещаем о получениии сигнала SigHup
+					printf("SIGHUP was received\n"); // Оповещаем о получениии сигнала SigHup
 				}
-				continue; // Продолжаем основной цикл, так как ошибка типа EINTER для нас по факту не является ошибкой
+				continue; // Переходим к следующей итеррации цикла, так как ошибка типа EINTER для нас по факту не является ошибкой
 			}
 			else 
 			{
@@ -75,18 +75,18 @@ int main() {
 		// Логика приёма нового соединения
 		if (FD_ISSET(serverSocket, &fds))  // Используем макрос FD_ISSET для проверки, готов ли серверный сокет к обработке нового соединения
                 {
-			int clientNewSocket = accept(serverSocket, NULL, NULL); // Заводим новый сокет и присваеваем значение функции accept(), которая принимает входящее соединение, создавая новый сокет для общения с новым клиентом
-			if (clientNewSocket != -1) // Если новое соединение есть
+			int clientSocketNEW = accept(serverSocket, NULL, NULL); // Заводим новый сокет и присваеваем значение функции accept(), которая принимает входящее соединение, создавая новый сокет для общения с новым клиентом
+			if (clientSocketNEW != -1) // Если новое соединение есть
 			{
-				printf("New connection: %d\n", clientNewSocket); // Оповещаем о новом соединении
+				printf("New connection: %d\n", clientSocketNEW); // Оповещаем о новом соединении
 
-				if (client_is_connected) // Если есть уже подключенный клиент, то закрываем старое соединение с оповещением
+				if (isConnected) // Если есть уже подключенный клиент, то закрываем старое соединение с оповещением
 				{
 					printf("Close: %d\n", clientSocket);
 					close(clientSocket);
 				}
-				client_is_connected = true; // Есть подключенный клиент
-				clientSocket = clientNewSocket; // В переменную клиентского сокета сохраняем новое соединение
+				isConnected = true; // Есть подключенный клиент
+				clientSocket = clientSocketNEW; // В переменную клиентского сокета сохраняем новое соединение
 			}
 		}
 
@@ -94,14 +94,15 @@ int main() {
 		if (FD_ISSET(clientSocket, &fds)) // Используем макрос FD_ISSET для проверки, есть ли данные для чтения из клиентского сокета
 		{
 			char buffer[1024]; // Устанавливаем значение того, сколько нужно будет прочесть функции read()
-			ssize_t bytesRead = read(clientSocket, buffer, sizeof(buffer)); // Присваиваем переменной bytesRead количество байтов которое удалось проситать функции read() 
+			ssize_t readVolume = read(clientSocket, buffer, sizeof(buffer)); // Присваиваем переменной readVolume количество байтов которое удалось проситать функции read() 
 			
-			if (bytesRead <= 0) // Если функции read() не удалось ни чего прочитать, закрываем клиентский сокет с оповещением
+			if (readVolume <= 0) // Если функции read() не удалось ни чего прочитать, закрываем клиентский сокет с оповещением
 			{
 				printf("Connection %d closed\n", clientSocket);
 				close(clientSocket);
+				isConnected = false;
 			}
-			else printf("Got %zd byte from %d\n", bytesRead, clientSocket); // Оповещаем о том, сколько байтов информации прочла функция read() из текущего склиентского сокета
+			else printf("%zd bits were read from %d\n", readVolume, clientSocket); // Оповещаем о том, сколько байтов информации прочла функция read() из текущего склиентского сокета
 		}
 	}
 
