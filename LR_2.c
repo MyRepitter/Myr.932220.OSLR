@@ -7,6 +7,7 @@
 #include <errno.h> // Библиотека для обработки ошибок
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 volatile sig_atomic_t wasSigHup = 0;           // sig_atomic_t - гарантирует, что компилятор операцию с этим типом данных всегда будет представлять в виде одной инструкции
 void sigHupHandler(int r) { wasSigHup = 1; }   // Объявление безопасного обработчика сигнала SigHup
