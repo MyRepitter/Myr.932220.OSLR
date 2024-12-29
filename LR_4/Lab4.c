@@ -33,7 +33,7 @@ static unsigned long minutesAfterChelyabinskMeteorite(void) {
 static ssize_t proc_file_read_handler(struct file *file_pointer, char __user *buffer,
                              size_t buffer_length, loff_t *offset) {
     unsigned long result = minutesAfterChelyabinskMeteorite();
-    char str[128];
+    char str[256];
     int length;
 
     length = snprintf(str, sizeof(str), "%lu minutes have passed since the fall of the Chelyabinsk meteorite.\n", result);
