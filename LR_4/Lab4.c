@@ -1,12 +1,12 @@
 #include <linux/init.h>
+#include <linux/version.h>
 #include <linux/module.h>
-#include <linux/kernel.h>
+#include <linux/uaccess.h>
 #include <linux/time.h>
 #include <linux/proc_fs.h> 
-#include <linux/uaccess.h>
-#include <linux/version.h>
+#include <linux/kernel.h>
 
-#define PROC_FILE_NAME "lab4"
+#define PROC_FILE_NAME "tsulab"
 static struct proc_dir_entry *your_proc_file;
 
 static unsigned long minutesAfterChelyabinskMeteorite(void) {
