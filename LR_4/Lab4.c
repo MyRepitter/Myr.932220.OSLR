@@ -6,9 +6,8 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 
-MODULE_LICENSE("GPL");
 #define PROC_FILE_NAME "lab4"
-static struct proc_dir_entry *our_proc_file;
+static struct proc_dir_entry *your_proc_file;
 
 static unsigned long minutesAfterChelyabinskMeteorite(void) {
     struct tm meteorite_time = {
@@ -31,8 +30,7 @@ static unsigned long minutesAfterChelyabinskMeteorite(void) {
     return difference / 60;
 }
 
-// Функция, вызываемая при чтении файла
-static ssize_t procfile_read(struct file *file_pointer, char __user *buffer,
+static ssize_t proc_file_read_handler(struct file *file_pointer, char __user *buffer,
                              size_t buffer_length, loff_t *offset) {
     unsigned long result = minutesAfterChelyabinskMeteorite();
     char str[128];
@@ -54,29 +52,30 @@ static ssize_t procfile_read(struct file *file_pointer, char __user *buffer,
 
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
-static const struct proc_ops proc_file_fops = {
-    .proc_read = procfile_read,
+static const struct proc_ops proc_file_handlers = {
+    .proc_read = proc_file_read_handler,
 };
 #else
-static const struct file_operations proc_file_fops = {
-    .read = procfile_read,
+static const struct file_operations proc_file_handlers = {
+    .read = proc_file_read_handler,
 };
 #endif
 
-static int __init procfs1_init(void) {
-    our_proc_file = proc_create(PROC_FILE_NAME, 0644, NULL, &proc_file_fops);
-    if (our_proc_file == NULL) {
-        pr_err("Не удалось создать /proc/%s\n", PROC_FILE_NAME);
+static int __init f_init(void) {
+    your_proc_file = proc_create(PROC_FILE_NAME, 0644, NULL, &proc_file_handlers);
+    if (your_proc_file == NULL) {
+        pr_err("Failed to create /proc/%s\n", PROC_FILE_NAME);
         return -ENOMEM;
     }
-    pr_info("/proc/%s создан\n", PROC_FILE_NAME);
+    pr_info("/proc/%s created\n", PROC_FILE_NAME);
     return 0;
 }
 
-static void __exit procfs1_exit(void) {
-    proc_remove(our_proc_file);
-    pr_info("/proc/%s удален\n", PROC_FILE_NAME);
+static void __exit f_exit(void) {
+    proc_remove(your_proc_file);
+    pr_info("/proc/%s removed\n", PROC_FILE_NAME);
 }
 
-module_init(procfs1_init);
-module_exit(procfs1_exit);
+module_init(f_init);
+module_exit(f_exit);
+MODULE_LICENSE("GPL");
